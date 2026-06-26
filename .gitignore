@@ -216,3 +216,23 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+
+wrenkh_menu.txt
+wrenkh_today.txt
+wrenkh_menu.json
+sparkys_menu.json
+wrenkh_menu.md
+
+wienerin_menu.json
+wienerin_raw_lines.txt
+sparkys_raw_homepage.txt
+sparkys_raw_spezialkarte.txt
+
+lunch_menus.json
+lunch_menus.md
