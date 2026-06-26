@@ -219,6 +219,7 @@ __marimo__/
 
 .venv/
 __pycache__/
+misc.xml
 *.pyc
 .pytest_cache/
 .env
