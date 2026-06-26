@@ -1,29 +1,36 @@
 import json
 
-from .restaurants.wrenkh import parse_wrenkh_menu
 from .formatter import format_restaurant_menu_markdown
+from .restaurants.wienerin import parse_wienerin_menu
+from .restaurants.wrenkh import parse_wrenkh_menu
 
 
 def main():
-    menu = parse_wrenkh_menu()
+    menus = [
+        parse_wrenkh_menu(),
+        parse_wienerin_menu(),
+    ]
 
-    # JSON output
-    menu_dict = menu.to_dict()
+    menu_dicts = [menu.to_dict() for menu in menus]
 
-    with open("wrenkh_menu.json", "w", encoding="utf-8") as json_file:
-        json.dump(menu_dict, json_file, ensure_ascii=False, indent=2)
+    with open("lunch_menus.json", "w", encoding="utf-8") as json_file:
+        json.dump(menu_dicts, json_file, ensure_ascii=False, indent=2)
 
-    # Markdown/text output
-    markdown_output = format_restaurant_menu_markdown(menu)
+    markdown_parts = []
+
+    for menu in menus:
+        markdown_parts.append(format_restaurant_menu_markdown(menu))
+
+    markdown_output = "\n\n---\n\n".join(markdown_parts)
 
     print(markdown_output)
 
-    with open("wrenkh_menu.md", "w", encoding="utf-8") as markdown_file:
+    with open("lunch_menus.md", "w", encoding="utf-8") as markdown_file:
         markdown_file.write(markdown_output)
 
     print("\nSaved:")
-    print("- wrenkh_menu.json")
-    print("- wrenkh_menu.md")
+    print("- lunch_menus.json")
+    print("- lunch_menus.md")
 
 
 if __name__ == "__main__":

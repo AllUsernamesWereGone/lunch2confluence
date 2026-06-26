@@ -1,11 +1,16 @@
+import html
+
 from .models import RestaurantMenu, DayMenu, MenuItem
 
 
 def format_menu_item(item: MenuItem) -> str:
-    parts = [f"- **{item.name}**"]
+    name = clean_output(item.name)
+    description = clean_output(item.description)
 
-    if item.description:
-        parts.append(f"  {item.description}")
+    parts = [f"- **{name}**"]
+
+    if description:
+        parts.append(f"  {description}")
 
     if item.tags:
         tags = ", ".join(item.tags)
@@ -30,23 +35,30 @@ def format_day_menu(day_menu: DayMenu) -> str:
 
     return "\n".join(lines).strip()
 
+def clean_output(value: str | None) -> str:
+    if value is None:
+        return ""
+
+    return html.unescape(value).replace("\xa0", " ").strip()
 
 def format_restaurant_menu_markdown(menu: RestaurantMenu) -> str:
     lines = [
         f"# {menu.restaurant.name} Lunch Menu",
         "",
-        f"**Address:** {menu.restaurant.address}",
-        f"**Source:** {menu.restaurant.source_url}",
+
+        f"**Address:** {clean_output(menu.restaurant.address)}",
+        f"**Source:** {clean_output(menu.restaurant.source_url)}",
+
     ]
 
     if menu.week_range_text:
-        lines.append(f"**Week:** {menu.week_range_text}")
+        lines.append(f"**Week:** {clean_output(menu.week_range_text)}")
 
     if menu.price_text:
-        lines.append(f"**Price:** {menu.price_text}")
+        lines.append(f"**Price:** {clean_output(menu.price_text)}")
 
     if menu.serving_time:
-        lines.append(f"**Serving time:** {menu.serving_time}")
+        lines.append(f"**Serving time:** {clean_output(menu.serving_time)}")
 
     lines.append("")
 

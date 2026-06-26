@@ -14,6 +14,7 @@ class Restaurant:
 class MenuItem:
     name: str
     description: Optional[str] = None
+    price: Optional[str] = None
     tags: list[str] = field(default_factory=list)
 
 
