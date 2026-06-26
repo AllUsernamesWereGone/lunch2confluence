@@ -6,8 +6,14 @@ from .models import RestaurantMenu, DayMenu, MenuItem
 def format_menu_item(item: MenuItem) -> str:
     name = clean_output(item.name)
     description = clean_output(item.description)
+    price = clean_output(item.price)
 
-    parts = [f"- **{name}**"]
+    title = f"- **{name}**"
+
+    if price:
+        title += f" — {price}"
+
+    parts = [title]
 
     if description:
         parts.append(f"  {description}")

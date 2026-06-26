@@ -220,15 +220,12 @@ def parse_wienerin_days(lines: list[str]) -> dict[str, DayMenu]:
                 description = description_without_price
                 index += 1
 
-        if price:
-            description_text = f"{description} ({price})" if description else price
-        else:
-            description_text = description
 
         days[weekday].items.append(
             MenuItem(
-                name=main_dish,
-                description=description_text,
+                name=clean_text(main_dish),
+                description=clean_text(description),
+                price=clean_text(price),
                 tags=[],
             )
         )
