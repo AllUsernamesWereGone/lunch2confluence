@@ -1,7 +1,8 @@
+import os
 import traceback
 
 from .confluence_client import ConfluenceClient
-from .formatter import format_restaurant_menu_markdown
+from .formatter import format_confluence_lunch_page
 from .restaurants.wienerin import parse_wienerin_menu
 from .restaurants.wrenkh import parse_wrenkh_menu
 
@@ -9,72 +10,51 @@ from .restaurants.wrenkh import parse_wrenkh_menu
 def safe_parse_restaurant(name: str, parser_func):
     try:
         return parser_func(), None
-    except Exception as error:
-        warning = {
-            "restaurant": name,
-            "error": str(error),
-            "traceback": traceback.format_exc(),
-        }
-        return None, warning
+    except Exception:
+        return None, f"{name} failed"
+
+
+def get_enabled_restaurants() -> set[str]:
+    raw_value = os.getenv("ENABLED_RESTAURANTS")
+
+    if not raw_value:
+        return {"wrenkh", "wienerin"}
+
+    return {
+        item.strip().lower()
+        for item in raw_value.split(",")
+        if item.strip()
+    }
 
 
 def build_markdown_output() -> str:
-    parser_jobs = [
-        ("WRENKH", parse_wrenkh_menu),
-        ("Wienerin", parse_wienerin_menu),
-    ]
+    enabled_restaurants = get_enabled_restaurants()
+
+    available_parser_jobs = {
+        "wrenkh": ("WRENKH", parse_wrenkh_menu),
+        "wienerin": ("Wienerin", parse_wienerin_menu),
+    }
 
     menus = []
-    warnings = []
+    errors = []
 
-    for restaurant_name, parser_func in parser_jobs:
-        menu, warning = safe_parse_restaurant(restaurant_name, parser_func)
+    for key, parser_job in available_parser_jobs.items():
+        if key not in enabled_restaurants:
+            continue
+
+        restaurant_name, parser_func = parser_job
+        menu, error = safe_parse_restaurant(restaurant_name, parser_func)
 
         if menu:
             menus.append(menu)
 
-        if warning:
-            warnings.append(warning)
+        if error:
+            errors.append(error)
 
-    markdown_parts = [
-        "# Lunch Menus",
-        "",
-        "Automatically generated lunch menu overview.",
-        "",
-    ]
-
-    if warnings:
-        markdown_parts.extend(
-            [
-                "## Import warnings",
-                "",
-                "Some restaurant menus could not be fetched during this run.",
-                "",
-            ]
-        )
-
-        for warning in warnings:
-            markdown_parts.append(f"- **{warning['restaurant']}**: {warning['error']}")
-
-        markdown_parts.append("")
-
-    if not menus:
-        markdown_parts.extend(
-            [
-                "## No menus available",
-                "",
-                "No restaurant menus could be fetched during this run.",
-                "",
-            ]
-        )
-    else:
-        for menu in menus:
-            markdown_parts.append(format_restaurant_menu_markdown(menu))
-            markdown_parts.append("")
-            markdown_parts.append("---")
-            markdown_parts.append("")
-
-    return "\n".join(markdown_parts)
+    return format_confluence_lunch_page(
+        menus=menus,
+        errors=errors,
+    )
 
 
 def main():

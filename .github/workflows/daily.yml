@@ -31,18 +31,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-
-      - name: Debug Wrenkh connectivity
-        run: |
-          echo "Testing normal curl..."
-          curl -Iv --connect-timeout 20 https://wrenkh-wien.at/site/de/restaurant/mittagsmenue || true
-
-          echo "Testing IPv4 curl..."
-          curl -4 -Iv --connect-timeout 20 https://wrenkh-wien.at/site/de/restaurant/mittagsmenue || true
-
-          echo "Testing IPv6 curl..."
-          curl -6 -Iv --connect-timeout 20 https://wrenkh-wien.at/site/de/restaurant/mittagsmenue || true    
+          python -m pip install -r requirements.txt 
 
       - name: Publish to Confluence
         run: |
