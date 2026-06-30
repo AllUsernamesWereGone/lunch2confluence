@@ -319,21 +319,14 @@ AVAILABLE_RESTAURANTS = {
     },
 }
 ```
-
-You can also restrict which restaurants run using the environment variable:
+The application also supports two optional environment variables:
 
 ```env
-ENABLED_RESTAURANTS=wienerin,wrenkh
+ENABLED_RESTAURANTS=
+DISABLED_RESTAURANTS=
 ```
-
-This is useful if one restaurant is temporarily broken or unreachable from GitHub Actions.
-
-Example GitHub Actions setting:
-
-```yaml
-env:
-  ENABLED_RESTAURANTS: wienerin
-```
+If ENABLED_RESTAURANTS is empty or missing, all registered restaurants are enabled by default.
+In DISBABLED_RESTAURANTS, restaurants are always skipped, even if they are also listed in ENABLED_RESTAURANTS.
 
 ## Data Model
 

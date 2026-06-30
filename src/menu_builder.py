@@ -4,17 +4,29 @@ from .formatter import format_confluence_lunch_page
 from .restaurants.registry import AVAILABLE_RESTAURANTS
 
 
-def get_enabled_restaurants() -> set[str]:
-    raw_value = os.getenv("ENABLED_RESTAURANTS")
+def parse_restaurant_env_list(variable_name: str) -> set[str]:
+    raw_value = os.getenv(variable_name)
 
-    if not raw_value:
-        return set(AVAILABLE_RESTAURANTS.keys())
+    if raw_value is None or not raw_value.strip():
+        return set()
 
     return {
         item.strip().lower()
         for item in raw_value.split(",")
         if item.strip()
     }
+
+
+def get_enabled_restaurants() -> set[str]:
+    enabled_restaurants = parse_restaurant_env_list("ENABLED_RESTAURANTS")
+    disabled_restaurants = parse_restaurant_env_list("DISABLED_RESTAURANTS")
+
+    if not enabled_restaurants:
+        selected_restaurants = set(AVAILABLE_RESTAURANTS.keys())
+    else:
+        selected_restaurants = enabled_restaurants
+
+    return selected_restaurants - disabled_restaurants
 
 
 def safe_parse_restaurant(display_name: str, parser_func):
