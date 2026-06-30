@@ -29,9 +29,22 @@ def get_enabled_restaurants() -> set[str]:
     return selected_restaurants - disabled_restaurants
 
 
-def safe_parse_restaurant(display_name: str, parser_func):
+def safe_parse_restaurant(
+    restaurant_key: str,
+    display_name: str,
+    parser_func,
+):
     try:
-        return parser_func(), None
+        menu = parser_func()
+
+        if menu.restaurant.id != restaurant_key:
+            return None, (
+                f"{display_name} failed: parser returned "
+                f"restaurant id '{menu.restaurant.id}' instead of '{restaurant_key}'"
+            )
+
+        return menu, None
+
     except Exception:
         return None, f"{display_name} failed"
 
@@ -47,8 +60,9 @@ def collect_menus():
             continue
 
         menu, error = safe_parse_restaurant(
-            restaurant_config["display_name"],
-            restaurant_config["parser"],
+            restaurant_key=restaurant_key,
+            display_name=restaurant_config["display_name"],
+            parser_func=restaurant_config["parser"],
         )
 
         if menu:
