@@ -43,6 +43,8 @@ class RestaurantMenu:
     current_day: Optional[str]
     days: dict[str, DayMenu]
     meta: MenuMeta
+    notes: list[str] = field(default_factory=list)
+    weekly_specials: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return asdict(self)

@@ -156,27 +156,14 @@ def format_day_menu_html(day_menu: DayMenu | None) -> str:
     )
 
 
-def get_weekly_special(menu: RestaurantMenu) -> str:
-    """
-    Whole-week extras.
 
-    For Wienerin this is useful because price_text contains things like:
-    Tagessuppe / Backhendlsalat / daily soup.
-    """
-    price_text = clean_output(menu.price_text)
 
-    if not price_text:
-        return ""
-
-    restaurant_id = menu.restaurant.id.lower()
-
-    if restaurant_id == "wienerin":
-        return price_text
-
-    if "tagessuppe" in price_text.lower() or "täglich" in price_text.lower():
-        return price_text
-
-    return ""
+def get_weekly_specials(menu: RestaurantMenu) -> list[str]:
+    return [
+        clean_output(special)
+        for special in menu.weekly_specials
+        if clean_output(special)
+    ]
 
 
 def get_restaurant_notes(menu: RestaurantMenu) -> str:
@@ -185,10 +172,10 @@ def get_restaurant_notes(menu: RestaurantMenu) -> str:
     if menu.serving_time:
         notes.append(clean_output(menu.serving_time))
 
-    weekly_special = get_weekly_special(menu)
-
-    if menu.price_text and clean_output(menu.price_text) != weekly_special:
+    if menu.price_text:
         notes.append(clean_output(menu.price_text))
+
+    notes.extend(menu.notes)
 
     return "<br />".join(html_text(note) for note in notes if note)
 
@@ -248,14 +235,14 @@ def format_today_section_html(menus: list[RestaurantMenu]) -> str:
 def format_restaurant_week_table_html(menu: RestaurantMenu) -> str:
     rows = []
 
-    weekly_special = get_weekly_special(menu)
+    weekly_specials = get_weekly_specials(menu)
 
-    if weekly_special:
+    if weekly_specials:
         rows.append(
             f"""
             <tr>
                 <td><strong>Special / whole week</strong></td>
-                <td>{html_text(weekly_special)}</td>
+                <td>{"<br />".join(html_text(special) for special in weekly_specials)}</td>
             </tr>
             """
         )
