@@ -8,7 +8,7 @@ def test_formatter_outputs_wrenkh_markdown():
     output = format_restaurant_menu_markdown(menu)
 
     assert isinstance(output, str)
-    assert "WRENKH" in output
+    assert "Wrenkh" in output
     assert "Lunch Menu" in output
     assert "Full Week" in output
 

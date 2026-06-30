@@ -5,7 +5,7 @@ def test_wrenkh_returns_restaurant_metadata():
     menu = parse_wrenkh_menu()
 
     assert menu.restaurant.id == "wrenkh"
-    assert menu.restaurant.name == "WRENKH"
+    assert menu.restaurant.name == "Wrenkh"
     assert menu.restaurant.address == "Bauernmarkt 10, 1010 Wien"
     assert menu.restaurant.source_url.startswith("https://")
 

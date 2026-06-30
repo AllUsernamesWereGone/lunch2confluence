@@ -310,7 +310,7 @@ Example:
 ```python
 AVAILABLE_RESTAURANTS = {
     "wrenkh": {
-        "display_name": "WRENKH",
+        "display_name": "Wrenkh",
         "parser": parse_wrenkh_menu,
     },
     "wienerin": {

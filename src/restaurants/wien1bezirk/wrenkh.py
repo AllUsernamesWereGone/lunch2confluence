@@ -241,7 +241,7 @@ def parse_wrenkh_menu() -> RestaurantMenu:
 
     restaurant = Restaurant(
         id="wrenkh",
-        name="WRENKH",
+        name="Wrenkh",
         address="Bauernmarkt 10, 1010 Wien",
         source_url=URL,
     )
