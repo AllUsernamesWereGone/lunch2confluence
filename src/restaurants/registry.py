@@ -1,5 +1,6 @@
 from src.restaurants.wien1bezirk.wienerin import parse_wienerin_menu
 from src.restaurants.wien1bezirk.wrenkh import parse_wrenkh_menu
+from src.restaurants.wien1bezirk.esterhazystueberl import parse_esterhazykeller_menu
 
 
 AVAILABLE_RESTAURANTS = {
@@ -16,4 +17,10 @@ AVAILABLE_RESTAURANTS = {
         "display_name": "Wienerin",
         "parser": parse_wienerin_menu,
     },
+
+    "esterhazykeller": {
+        "display_name": "Esterházystüberl",
+        "parser": parse_esterhazykeller_menu,
+    },
+
 }
