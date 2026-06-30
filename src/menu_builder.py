@@ -69,6 +69,7 @@ def collect_menus():
 
     for restaurant_key, restaurant_config in AVAILABLE_RESTAURANTS.items():
         if restaurant_key not in enabled_restaurants:
+            print(f"[INFO] Skipping disabled restaurant: {restaurant_key}")
             continue
 
         menu, error = safe_parse_restaurant(

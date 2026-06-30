@@ -59,14 +59,15 @@ STOP_MARKERS = {
 
 
 def fetch_page_text() -> str:
+    timeouts = [10, 20] # first attempt, second attempt
     last_error = None
 
-    for attempt in range(3):
+    for attempt, timeout_seconds in enumerate(timeouts, start=1):
         try:
             response = requests.get(
                 URL,
                 headers=HEADERS,
-                timeout=(15, 45),
+                timeout=timeout_seconds,
             )
             response.raise_for_status()
 
@@ -75,8 +76,10 @@ def fetch_page_text() -> str:
 
         except requests.RequestException as error:
             last_error = error
-            print(f"[WARNING] Wrenkh fetch attempt {attempt + 1}/3 failed: {error}")
-            time.sleep(5 * (attempt + 1))
+            print(
+                f"[WARNING] Wrenkh fetch attempt {attempt}/{len(timeouts)} "
+                f"failed after {timeout_seconds}s: {error}"
+            )
 
     raise last_error
 
