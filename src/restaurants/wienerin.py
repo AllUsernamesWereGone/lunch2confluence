@@ -64,7 +64,7 @@ def clean_lines(text: str) -> list[str]:
 
 def fetch_pdf_url() -> str:
     try:
-        response = requests.get(PAGE_URL, timeout=10)
+        response = requests.get(PAGE_URL, timeout=30)
         response.raise_for_status()
 
         soup = BeautifulSoup(response.text, "html.parser")

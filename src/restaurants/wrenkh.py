@@ -2,6 +2,7 @@ import datetime
 import json
 import re
 import html
+import time
 from zoneinfo import ZoneInfo
 
 import requests
@@ -47,12 +48,21 @@ STOP_MARKERS = {
 
 
 def fetch_page_text() -> str:
-    response = requests.get(URL, timeout=10)
-    response.raise_for_status()
+    last_error = None
 
-    soup = BeautifulSoup(response.text, "html.parser")
-    return soup.get_text("\n", strip=True)
+    for attempt in range(3):
+        try:
+            response = requests.get(URL, timeout=30)
+            response.raise_for_status()
 
+            soup = BeautifulSoup(response.text, "html.parser")
+            return soup.get_text("\n", strip=True)
+
+        except requests.RequestException as error:
+            last_error = error
+            time.sleep(3)
+
+    raise last_error
 
 def clean_lines(text: str) -> list[str]:
     lines = []
