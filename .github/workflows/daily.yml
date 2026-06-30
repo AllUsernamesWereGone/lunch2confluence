@@ -17,6 +17,9 @@ jobs:
       CONFLUENCE_EMAIL: ${{ secrets.CONFLUENCE_EMAIL }}
       CONFLUENCE_API_TOKEN: ${{ secrets.CONFLUENCE_API_TOKEN }}
       CONFLUENCE_PAGE_ID: ${{ secrets.CONFLUENCE_PAGE_ID }}
+      ENABLED_RESTAURANTS: ${{ secrets.ENABLED_RESTAURANTS }}
+      DISABLED_RESTAURANTS: ${{ secrets.DISABLED_RESTAURANTS }}
+
 
     steps:
       - name: Checkout repository
@@ -32,6 +35,18 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt 
+      
+
+      - name: Generate preview HTML
+        run: |
+          python -m src.main
+
+      - name: Upload generated HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: lunch-menus-html
+          path: lunch_menus.html
+
 
       - name: Publish to Confluence
         run: |

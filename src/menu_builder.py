@@ -37,15 +37,27 @@ def safe_parse_restaurant(
     try:
         menu = parser_func()
 
-        if menu.restaurant.id != restaurant_key:
+        returned_id = menu.restaurant.id.lower().strip()
+        expected_id = restaurant_key.lower().strip()
+
+        print(
+            f"[INFO] Parsed restaurant: "
+            f"registry_key={restaurant_key}, "
+            f"display_name={display_name}, "
+            f"returned_id={menu.restaurant.id}, "
+            f"returned_name={menu.restaurant.name}"
+        )
+
+        if returned_id != expected_id:
             return None, (
-                f"{display_name} failed: parser returned "
-                f"restaurant id '{menu.restaurant.id}' instead of '{restaurant_key}'"
+                f"{display_name} failed: parser returned id "
+                f"'{returned_id}' instead of expected id '{expected_id}'"
             )
 
         return menu, None
 
-    except Exception:
+    except Exception as error:
+        print(f"[ERROR] {display_name} failed: {error}")
         return None, f"{display_name} failed"
 
 
