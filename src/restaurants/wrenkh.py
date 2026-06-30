@@ -12,6 +12,17 @@ from ..models import Restaurant, MenuItem, DayMenu, MenuMeta, RestaurantMenu
 
 URL = "https://wrenkh-wien.at/site/de/restaurant/mittagsmenue"
 
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/126.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "de-AT,de;q=0.9,en;q=0.8",
+    "Connection": "close",
+}
+
 WEEKDAYS = ["MO", "DI", "MI", "DO", "FR"]
 
 WEEKDAY_LABELS = {
@@ -52,7 +63,11 @@ def fetch_page_text() -> str:
 
     for attempt in range(3):
         try:
-            response = requests.get(URL, timeout=30)
+            response = requests.get(
+                URL,
+                headers=HEADERS,
+                timeout=(15, 45),
+            )
             response.raise_for_status()
 
             soup = BeautifulSoup(response.text, "html.parser")
@@ -60,7 +75,8 @@ def fetch_page_text() -> str:
 
         except requests.RequestException as error:
             last_error = error
-            time.sleep(3)
+            print(f"[WARNING] Wrenkh fetch attempt {attempt + 1}/3 failed: {error}")
+            time.sleep(5 * (attempt + 1))
 
     raise last_error
 
