@@ -10,7 +10,7 @@ import pdfplumber
 import requests
 from bs4 import BeautifulSoup
 
-from ..models import Restaurant, MenuItem, DayMenu, MenuMeta, RestaurantMenu
+from src.models import Restaurant, MenuItem, DayMenu, MenuMeta, RestaurantMenu
 
 
 PAGE_URL = "https://wienerin.org/speisen.html"

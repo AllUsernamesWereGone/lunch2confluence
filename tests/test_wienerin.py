@@ -1,4 +1,4 @@
-from src.restaurants.wienerin import parse_wienerin_menu
+from src.restaurants.wien1bezirk.wienerin import parse_wienerin_menu
 
 
 def test_wienerin_returns_restaurant_metadata():

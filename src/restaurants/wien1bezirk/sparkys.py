@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 import requests
 from bs4 import BeautifulSoup
 
-from ..models import Restaurant, DayMenu, MenuItem, MenuMeta, RestaurantMenu
+from src.models import Restaurant, DayMenu, MenuItem, MenuMeta, RestaurantMenu
 
 
 PAGE_URL = "https://www.sparkys.at/"

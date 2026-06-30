@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 import requests
 from bs4 import BeautifulSoup
 
-from ..models import Restaurant, MenuItem, DayMenu, MenuMeta, RestaurantMenu
+from src.models import Restaurant, MenuItem, DayMenu, MenuMeta, RestaurantMenu
 
 URL = "https://wrenkh-wien.at/site/de/restaurant/mittagsmenue"
 

@@ -1,6 +1,6 @@
 from src.formatter import format_restaurant_menu_markdown
-from src.restaurants.wrenkh import parse_wrenkh_menu
-from src.restaurants.wienerin import parse_wienerin_menu
+from src.restaurants.wien1bezirk.wrenkh import parse_wrenkh_menu
+from src.restaurants.wien1bezirk.wienerin import parse_wienerin_menu
 
 
 def test_formatter_outputs_wrenkh_markdown():

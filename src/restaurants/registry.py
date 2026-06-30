@@ -1,5 +1,5 @@
-from .wienerin import parse_wienerin_menu
-from .wrenkh import parse_wrenkh_menu
+from src.restaurants.wien1bezirk.wienerin import parse_wienerin_menu
+from src.restaurants.wien1bezirk.wrenkh import parse_wrenkh_menu
 
 
 AVAILABLE_RESTAURANTS = {

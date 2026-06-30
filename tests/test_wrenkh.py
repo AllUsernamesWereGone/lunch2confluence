@@ -1,4 +1,4 @@
-from src.restaurants.wrenkh import parse_wrenkh_menu
+from src.restaurants.wien1bezirk.wrenkh import parse_wrenkh_menu
 
 
 def test_wrenkh_returns_restaurant_metadata():
