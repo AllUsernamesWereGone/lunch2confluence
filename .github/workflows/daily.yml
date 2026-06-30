@@ -42,7 +42,7 @@ jobs:
           python -m src.main
 
       - name: Upload generated HTML
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: lunch-menus-html
           path: lunch_menus.html
