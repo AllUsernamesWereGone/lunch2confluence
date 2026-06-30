@@ -1,14 +1,39 @@
 import html
 from datetime import datetime
 from zoneinfo import ZoneInfo
+
 from .models import RestaurantMenu, DayMenu, MenuItem
+
 
 WEEKDAY_ORDER = ["MO", "DI", "MI", "DO", "FR"]
 
+WEEKDAY_DISPLAY = {
+    "MO": "Monday",
+    "DI": "Tuesday",
+    "MI": "Wednesday",
+    "DO": "Thursday",
+    "FR": "Friday",
+}
+
+
+def clean_output(value: str | None) -> str:
+    if value is None:
+        return ""
+
+    return html.unescape(str(value)).replace("\xa0", " ").strip()
+
+
+def html_text(value: str | None) -> str:
+    return html.escape(clean_output(value))
+
+
 def format_menu_item(item: MenuItem) -> str:
+    """
+    Legacy Markdown formatter, still useful for tests/local markdown output.
+    """
     name = clean_output(item.name)
     description = clean_output(item.description)
-    price = clean_output(item.price)
+    price = clean_output(getattr(item, "price", None))
 
     title = f"- **{name}**"
 
@@ -28,6 +53,9 @@ def format_menu_item(item: MenuItem) -> str:
 
 
 def format_day_menu(day_menu: DayMenu) -> str:
+    """
+    Legacy Markdown formatter, still useful for tests/local markdown output.
+    """
     lines = [
         f"## {day_menu.weekday} - {day_menu.label}",
         "",
@@ -43,20 +71,17 @@ def format_day_menu(day_menu: DayMenu) -> str:
 
     return "\n".join(lines).strip()
 
-def clean_output(value: str | None) -> str:
-    if value is None:
-        return ""
-
-    return html.unescape(value).replace("\xa0", " ").strip()
 
 def format_restaurant_menu_markdown(menu: RestaurantMenu) -> str:
+    """
+    Legacy Markdown formatter.
+    Your Confluence page now uses the HTML formatter below.
+    """
     lines = [
         f"# {menu.restaurant.name} Lunch Menu",
         "",
-
         f"**Address:** {clean_output(menu.restaurant.address)}",
         f"**Source:** {clean_output(menu.restaurant.source_url)}",
-
     ]
 
     if menu.week_range_text:
@@ -81,7 +106,7 @@ def format_restaurant_menu_markdown(menu: RestaurantMenu) -> str:
     lines.append("# Full Week")
     lines.append("")
 
-    for weekday in ["MO", "DI", "MI", "DO", "FR"]:
+    for weekday in WEEKDAY_ORDER:
         if weekday in menu.days:
             lines.append(format_day_menu(menu.days[weekday]))
             lines.append("")
@@ -99,60 +124,44 @@ def format_restaurant_menu_markdown(menu: RestaurantMenu) -> str:
     return "\n".join(lines).strip()
 
 
-
-
-def table_cell(value: str | None) -> str:
-    """
-    Escapes text so it behaves nicely inside Markdown tables.
-    """
-    cleaned = clean_output(value)
-
-    if not cleaned:
-        return ""
-
-    return cleaned.replace("|", "\\|").replace("\n", "<br>")
-
-
-def format_menu_item_compact(item: MenuItem) -> str:
-    name = table_cell(item.name)
-    description = table_cell(item.description)
-    price = table_cell(getattr(item, "price", None))
-
-    parts = []
+def format_item_html(item: MenuItem) -> str:
+    name = html_text(item.name)
+    description = html_text(item.description)
+    price = html_text(getattr(item, "price", None))
 
     title = f"<strong>{name}</strong>"
 
     if price:
         title += f" — {price}"
 
-    parts.append(title)
+    parts = [title]
 
     if description:
         parts.append(description)
 
     if item.tags:
         tags = ", ".join(item.tags)
-        parts.append(f"<em>{table_cell(tags)}</em>")
+        parts.append(f"<em>{html_text(tags)}</em>")
 
-    return "<br>".join(parts)
+    return "<br />".join(parts)
 
 
-def format_day_items_for_table(day_menu: DayMenu | None) -> str:
+def format_day_menu_html(day_menu: DayMenu | None) -> str:
     if day_menu is None or not day_menu.items:
-        return ""
+        return "<em>No menu found.</em>"
 
-    return "<br><br>".join(
-        format_menu_item_compact(item)
+    return "<br /><br />".join(
+        format_item_html(item)
         for item in day_menu.items
     )
 
 
 def get_weekly_special(menu: RestaurantMenu) -> str:
     """
-    Returns whole-week special notes.
+    Whole-week extras.
 
-    For now, Wienerin's price_text contains the soup/salad/daily soup notes.
-    Wrenkh's price_text is just general pricing, so we do not treat it as a special.
+    For Wienerin this is useful because price_text contains things like:
+    Tagessuppe / Backhendlsalat / daily soup.
     """
     price_text = clean_output(menu.price_text)
 
@@ -176,76 +185,147 @@ def get_restaurant_notes(menu: RestaurantMenu) -> str:
     if menu.serving_time:
         notes.append(clean_output(menu.serving_time))
 
-    # Wrenkh's price text is general pricing, useful for today's table notes.
     weekly_special = get_weekly_special(menu)
 
     if menu.price_text and clean_output(menu.price_text) != weekly_special:
         notes.append(clean_output(menu.price_text))
 
-    return "<br>".join(table_cell(note) for note in notes if note)
+    return "<br />".join(html_text(note) for note in notes if note)
 
 
-def format_today_table(menus: list[RestaurantMenu]) -> str:
-    lines = [
-        "## Today",
-        "",
-        "| Restaurant | Today's menu | Notes |",
-        "|---|---|---|",
+def confluence_expand_macro(title: str, body_html: str) -> str:
+    return f"""
+    <ac:structured-macro ac:name="expand">
+        <ac:parameter ac:name="title">{html_text(title)}</ac:parameter>
+        <ac:rich-text-body>
+            {body_html}
+        </ac:rich-text-body>
+    </ac:structured-macro>
+    """
+
+
+def format_today_restaurant_block_html(menu: RestaurantMenu) -> str:
+    current_day = menu.current_day
+    day_menu = menu.days.get(current_day) if current_day else None
+    notes = get_restaurant_notes(menu)
+
+    return f"""
+    <h3>{html_text(menu.restaurant.name)}</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Today's menu</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{format_day_menu_html(day_menu)}</td>
+                <td>{notes}</td>
+            </tr>
+        </tbody>
+    </table>
+    """
+
+
+def format_today_section_html(menus: list[RestaurantMenu]) -> str:
+    if not menus:
+        return """
+        <h2>Today</h2>
+        <p><em>No restaurant menus could be fetched.</em></p>
+        """
+
+    sections = [
+        "<h2>Today</h2>"
     ]
 
     for menu in menus:
-        current_day = menu.current_day
-        day_menu = menu.days.get(current_day) if current_day else None
+        sections.append(format_today_restaurant_block_html(menu))
 
-        restaurant = table_cell(menu.restaurant.name)
-        today_items = format_day_items_for_table(day_menu)
-        notes = get_restaurant_notes(menu)
-
-        lines.append(f"| {restaurant} | {today_items} | {notes} |")
-
-    return "\n".join(lines)
+    return "\n".join(sections)
 
 
-def format_week_table(menus: list[RestaurantMenu]) -> str:
-    lines = [
-        "## Full week",
-        "",
-        "| Restaurant | Weekly special | MO | DI | MI | DO | FR |",
-        "|---|---|---|---|---|---|---|",
-    ]
+def format_restaurant_week_table_html(menu: RestaurantMenu) -> str:
+    rows = []
 
-    for menu in menus:
-        restaurant = table_cell(menu.restaurant.name)
-        weekly_special = table_cell(get_weekly_special(menu))
+    weekly_special = get_weekly_special(menu)
 
-        day_cells = []
-
-        for weekday in WEEKDAY_ORDER:
-            day_menu = menu.days.get(weekday)
-            day_cells.append(format_day_items_for_table(day_menu))
-
-        lines.append(
-            f"| {restaurant} | {weekly_special} | "
-            f"{day_cells[0]} | {day_cells[1]} | {day_cells[2]} | {day_cells[3]} | {day_cells[4]} |"
+    if weekly_special:
+        rows.append(
+            f"""
+            <tr>
+                <td><strong>Special / whole week</strong></td>
+                <td>{html_text(weekly_special)}</td>
+            </tr>
+            """
         )
 
-    return "\n".join(lines)
+    for weekday in WEEKDAY_ORDER:
+        day_menu = menu.days.get(weekday)
+        day_label = WEEKDAY_DISPLAY.get(weekday, weekday)
+
+        rows.append(
+            f"""
+            <tr>
+                <td><strong>{weekday}</strong><br />{html_text(day_label)}</td>
+                <td>{format_day_menu_html(day_menu)}</td>
+            </tr>
+            """
+        )
+
+    return f"""
+    <table>
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Menu</th>
+            </tr>
+        </thead>
+        <tbody>
+            {''.join(rows)}
+        </tbody>
+    </table>
+    """
 
 
-def format_errors(errors: list[str]) -> str:
-    lines = [
-        "## Errors",
-        "",
+def format_restaurant_week_section_html(menu: RestaurantMenu) -> str:
+    table_html = format_restaurant_week_table_html(menu)
+
+    return confluence_expand_macro(
+        title=f"{menu.restaurant.name} - full week",
+        body_html=table_html,
+    )
+
+
+def format_full_week_section_html(menus: list[RestaurantMenu]) -> str:
+    sections = [
+        "<h2>Full week</h2>"
     ]
 
+    for menu in menus:
+        sections.append(format_restaurant_week_section_html(menu))
+
+    return "\n".join(sections)
+
+
+def format_errors_section_html(errors: list[str]) -> str:
     if not errors:
-        lines.append("_No errors._")
-        return "\n".join(lines)
+        return """
+        <h2>Errors</h2>
+        <p><em>No errors.</em></p>
+        """
 
-    for error in errors:
-        lines.append(f"- {table_cell(error)}")
+    error_items = "".join(
+        f"<li>{html_text(error)}</li>"
+        for error in errors
+    )
 
-    return "\n".join(lines)
+    return f"""
+    <h2>Errors</h2>
+    <ul>
+        {error_items}
+    </ul>
+    """
 
 
 def format_confluence_lunch_page(
@@ -256,28 +336,14 @@ def format_confluence_lunch_page(
         ZoneInfo("Europe/Vienna")
     ).strftime("%d.%m.%Y %H:%M:%S Europe/Vienna")
 
-    lines = [
-        "# Lunch Menus",
-        "",
-        f"**Pulled at:** {pulled_at}",
-        "",
-    ]
+    return f"""
+    <h1>Lunch Menus</h1>
 
-    if menus:
-        lines.append(format_today_table(menus))
-        lines.append("")
-        lines.append(format_week_table(menus))
-        lines.append("")
-    else:
-        lines.extend(
-            [
-                "## Today",
-                "",
-                "_No restaurant menus could be fetched._",
-                "",
-            ]
-        )
+    <p><strong>Pulled at:</strong> {html_text(pulled_at)}</p>
 
-    lines.append(format_errors(errors))
+    {format_today_section_html(menus)}
 
-    return "\n".join(lines)
+    {format_full_week_section_html(menus)}
+
+    {format_errors_section_html(errors)}
+    """

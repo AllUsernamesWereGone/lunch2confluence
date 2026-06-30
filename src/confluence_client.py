@@ -38,10 +38,7 @@ class ConfluenceClient:
         current_version = page["version"]["number"]
         next_version = current_version + 1
 
-        html_content = markdown.markdown(
-            markdown_content,
-            extensions=["extra"],
-        )
+        html_content = markdown_content
 
         url = f"{self.base_url}/rest/api/content/{self.page_id}"
 
